@@ -1,35 +1,55 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from 'react';
+import { AuthLayout, Login, Signup } from './components/AuthLayout';
+import { EXPORTED_THEME } from './theme';
+import './App.css';
+
+type AuthMode = 'login' | 'signup';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [authMode, setAuthMode] = useState<AuthMode>('login');
+  const theme = EXPORTED_THEME;
+
+  const handleLogin = (email: string, password: string) => {
+    console.log('Login successful:', email);
+    // Add your login logic here
+  };
+
+  const handleSignup = (name: string, email: string, password: string) => {
+    console.log('Signup successful:', name, email);
+    // Add your signup logic here
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div 
+      style={{ 
+        minHeight: '100vh',
+        backgroundColor: theme.colors.background,
+        color: theme.colors.text
+      }}
+    >
+      {authMode === 'login' ? (
+        <AuthLayout
+          title={`${theme.name} Theme`}
+          subtitle="Sign in to your account"
+        >
+          <Login
+            onLogin={handleLogin}
+            onSwitchToSignup={() => setAuthMode('signup')}
+          />
+        </AuthLayout>
+      ) : (
+        <AuthLayout
+          title="Create Account"
+          subtitle="Join us today"
+        >
+          <Signup
+            onSignup={handleSignup}
+            onSwitchToLogin={() => setAuthMode('login')}
+          />
+        </AuthLayout>
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;

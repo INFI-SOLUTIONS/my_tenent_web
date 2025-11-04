@@ -1,6 +1,12 @@
-import React, { useState } from 'react';
-import { EXPORTED_THEME } from '../../theme';
-import './AuthForm.css';
+import React from "react";
+import { useFormik } from "formik";
+import { TextField, Button, Box, Typography } from "@mui/material";
+import { EXPORTED_THEME } from "../../theme";
+import {
+  loginInitialValues,
+  loginValidationSchema,
+} from "../../constants/constants";
+import "./AuthForm.css";
 
 interface LoginProps {
   onLogin?: (email: string, password: string) => void;
@@ -8,137 +14,128 @@ interface LoginProps {
 }
 
 export const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToSignup }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
   const theme = EXPORTED_THEME;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (!email || !password) {
-      setError('Please fill in all fields');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      onLogin?.(email, password);
-      console.log('Login attempt:', { email, password });
-    } catch (err) {
-      setError('Login failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const formik = useFormik({
+    initialValues: loginInitialValues,
+    validationSchema: loginValidationSchema,
+    onSubmit: async (values, { setSubmitting }) => {
+      setSubmitting(true);
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // simulate API
+        onLogin?.(values.email, values.password);
+        console.log("Login attempt:", values);
+      } catch (err) {
+        console.error("Login failed");
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
 
   return (
-    <form className="auth-form" onSubmit={handleSubmit}>
-      <div className="form-group">
-        <label 
-          htmlFor="email" 
-          style={{ 
-            color: theme.colors.text,
-            fontFamily: theme.fonts.primary 
-          }}
-        >
-          Email
-        </label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter your email"
-          disabled={loading}
-          style={{
-            backgroundColor: theme.colors.surface,
-            color: theme.colors.text,
-            border: `1px solid ${theme.colors.border}`,
-            borderRadius: theme.borderRadius.md,
-            fontFamily: theme.fonts.primary,
-          }}
-        />
-      </div>
+    <Box
+      component="form"
+      onSubmit={formik.handleSubmit}
+      className="auth-form"
+      sx={{
+        "& .MuiOutlinedInput-root": {
+          backgroundColor: "transparent", // no white bg
+          color: theme.colors.text,
+        },
+        "& .MuiInputLabel-root": {
+          color: theme.colors.textSecondary,
+          fontFamily: theme.fonts.primary,
+        },
+        "& .MuiOutlinedInput-notchedOutline": {
+          borderColor: theme.colors.border,
+        },
+      }}
+    >
+      <Typography
+        variant="h5"
+        sx={{
+          color: theme.colors.text,
+          fontFamily: theme.fonts.primary,
+          textAlign: "center",
+          mb: 2,
+        }}
+      >
+        Sign In
+      </Typography>
 
-      <div className="form-group">
-        <label 
-          htmlFor="password" 
-          style={{ 
-            color: theme.colors.text,
-            fontFamily: theme.fonts.primary 
-          }}
-        >
-          Password
-        </label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Enter your password"
-          disabled={loading}
-          style={{
-            backgroundColor: theme.colors.surface,
-            color: theme.colors.text,
-            border: `1px solid ${theme.colors.border}`,
-            borderRadius: theme.borderRadius.md,
-            fontFamily: theme.fonts.primary,
-          }}
-        />
-      </div>
+      {/* Email */}
+      <TextField
+        fullWidth
+        id="email"
+        name="email"
+        label="Email"
+        size="small"
+        type="email"
+        value={formik.values.email}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        error={formik.touched.email && Boolean(formik.errors.email)}
+        helperText={formik.touched.email && formik.errors.email}
+        margin="normal"
+      />
 
-      {error && (
-        <div 
-          className="error-message"
-          style={{ 
-            color: theme.colors.error,
-            backgroundColor: `${theme.colors.error}15`,
-            borderRadius: theme.borderRadius.md 
-          }}
-        >
-          {error}
-        </div>
-      )}
+      {/* Password */}
+      <TextField
+        fullWidth
+        id="password"
+        name="password"
+        label="Password"
+        size="small"
+        type="password"
+        value={formik.values.password}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        error={formik.touched.password && Boolean(formik.errors.password)}
+        helperText={formik.touched.password && formik.errors.password}
+        margin="normal"
+      />
 
-      <button
+      <Button
         type="submit"
-        disabled={loading}
-        className="auth-button"
-        style={{
+        fullWidth
+        variant="contained"
+        disabled={formik.isSubmitting}
+        sx={{
+          mt: 2,
           backgroundColor: theme.colors.primary,
           color: theme.colors.surface,
           fontFamily: theme.fonts.primary,
           borderRadius: theme.borderRadius.md,
-          border: 'none',
+          "&:hover": { backgroundColor: theme.colors.primaryDark },
         }}
       >
-        {loading ? 'Signing in...' : 'Sign In'}
-      </button>
+        {formik.isSubmitting ? "Signing in..." : "Sign In"}
+      </Button>
 
       {onSwitchToSignup && (
-        <div className="auth-footer">
-          <span style={{ color: theme.colors.textSecondary }}>
-            Don't have an account?{' '}
-          </span>
-          <button
-            type="button"
-            onClick={onSwitchToSignup}
-            className="link-button"
-            style={{
-              color: theme.colors.primary,
+        <Box textAlign="center" mt={2}>
+          <Typography
+            sx={{
+              color: theme.colors.textSecondary,
               fontFamily: theme.fonts.primary,
             }}
           >
-            Sign up
-          </button>
-        </div>
+            Don’t have an account?{" "}
+            <Button
+              variant="text"
+              onClick={onSwitchToSignup}
+              sx={{
+                color: theme.colors.primary,
+                fontFamily: theme.fonts.primary,
+                textTransform: "none",
+              }}
+            >
+              Sign up
+            </Button>
+          </Typography>
+        </Box>
       )}
-    </form>
+    </Box>
   );
 };
-

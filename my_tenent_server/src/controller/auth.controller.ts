@@ -23,7 +23,7 @@ const Register = async (req: any, res: any) => {
 
     await user.save();
     res.status(201).json({
-      message: "Registration successful",
+      message: "Registration successfully",
       user: {
         id: user.id,
         fullName: user.fullName,

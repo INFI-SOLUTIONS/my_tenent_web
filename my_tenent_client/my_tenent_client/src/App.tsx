@@ -8,7 +8,9 @@ import {
 import { AuthLayout, Login, Signup } from "./components/AuthLayout";
 import { Home } from "../src/pages/Home";
 import { EXPORTED_THEME } from "./theme";
+
 import "./App.css";
+import ForgotPassword from "./pages/ForgotPassword";
 
 type AuthMode = "login" | "signup";
 
@@ -65,6 +67,7 @@ function App() {
       <Routes>
         <Route path="/" element={<AuthWrapper />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
       </Routes>
     </Router>
   );

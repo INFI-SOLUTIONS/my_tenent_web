@@ -1,7 +1,8 @@
 import React from "react";
 import { useFormik } from "formik";
-import { TextField, Button, Box, Typography } from "@mui/material";
+import { TextField, Button, Box, Typography, Link } from "@mui/material";
 import { EXPORTED_THEME } from "../../theme";
+import { Link as RouterLink } from "react-router-dom";
 import {
   loginInitialValues,
   loginValidationSchema,
@@ -112,6 +113,22 @@ export const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToSignup }) => {
       >
         {formik.isSubmitting ? "Signing in..." : "Sign In"}
       </Button>
+      <Link
+        component={RouterLink}
+        to="/forgot-password"
+        underline="hover"
+        sx={{
+          color: theme.colors.primary,
+          fontFamily: theme.fonts.primary,
+          fontSize: "0.9rem",
+        }}
+        // onClick={(e) => {
+        //   e.preventDefault();
+        //   console.log("Forgot password clicked");
+        // }}
+      >
+        Forgot Password?
+      </Link>
 
       {onSwitchToSignup && (
         <Box textAlign="center" mt={2}>

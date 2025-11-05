@@ -31,8 +31,12 @@ const Register = async (req: any, res: any) => {
         role: user.role,
       },
     });
-  } catch (error) {
-    res.status(500).json({ message: error })
+  } catch (error: any) {
+    console.error("Register error:", error);
+    res.status(500).json({ 
+      message: "Registration failed",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 }
 
@@ -40,23 +44,48 @@ const Register = async (req: any, res: any) => {
 
 const Login = async (req: any, res: any) => {
   try {
+    // Validate request body
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({ 
+        message: "Email and password are required" 
+      });
+    }
+
+    // Check if JWT_SECRET is set
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is not set in environment variables");
+      return res.status(500).json({ 
+        message: "Server configuration error. Please contact administrator." 
+      });
+    }
+
+    // Find user
     const existingUser = await User.findOne({ email });
     if (!existingUser) {
       return res.status(404).json({ message: "Email not found. Please register first." });
     }
 
+    // Check if user has a password (in case of data inconsistency)
+    if (!existingUser.password) {
+      console.error("User found but password field is missing");
+      return res.status(500).json({ 
+        message: "Account error. Please contact support." 
+      });
+    }
+
+    // Compare password
     const isPasswordValid = await bcrypt.compare(password, existingUser.password);
     if (!isPasswordValid) {
       return res.status(400).json({ message: "Incorrect password." });
     }
 
+    // Generate JWT token
     const token = jwt.sign(
       { id: existingUser._id },
-      process.env.JWT_SECRET as string,
+      process.env.JWT_SECRET,
       { expiresIn: "15m" }
-
     );
 
     res.status(200).json({
@@ -69,9 +98,28 @@ const Login = async (req: any, res: any) => {
       },
       token,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Login error:", error);
-    res.status(500).json({ message: "Server error. Please try again later." });
+    
+    // Provide more specific error messages
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ 
+        message: "Validation error", 
+        error: error.message 
+      });
+    }
+    
+    if (error.name === 'MongoError' || error.name === 'MongooseError') {
+      return res.status(500).json({ 
+        message: "Database error. Please try again later.",
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    }
+
+    res.status(500).json({ 
+      message: "Server error. Please try again later.",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 

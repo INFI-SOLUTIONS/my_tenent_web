@@ -25,13 +25,18 @@ async function getApp(): Promise<Express> {
   
   app.use('/auth', AuthRoutes);
 
-  // Connect to database (non-blocking)
+  // Connect to database (non-blocking, but log status)
   if (!dbConnectionAttempted) {
     dbConnectionAttempted = true;
-    ConnectDB().catch((error: any) => {
-      console.error('Database connection error:', error);
-      // Don't throw - allow app to start even if DB fails initially
-    });
+    ConnectDB()
+      .then(() => {
+        console.log('Database connection successful');
+      })
+      .catch((error: any) => {
+        console.error('Database connection error:', error);
+        // Don't throw - allow app to start even if DB fails initially
+        // But routes will fail when trying to use DB
+      });
   }
 
   return app;

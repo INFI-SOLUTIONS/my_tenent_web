@@ -90,7 +90,9 @@ const ForgotPassword = async (req: any, res: any) => {
       { expiresIn: "15m" }
     )
 
-    const resetLink = `http://localhost:5000/auth/reset-password/${token}`;
+    const baseUrl = process.env.BASE_URL || 
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:5000');
+    const resetLink = `${baseUrl}/auth/reset-password/${token}`;
 
     const message = `
       You requested a password reset.

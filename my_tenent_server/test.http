@@ -1,0 +1,46 @@
+### Replace with your actual Vercel URL
+@baseUrl = https://your-project-name.vercel.app
+
+### Test Sign Up
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "fullName": "John Doe",
+  "email": "john@example.com",
+  "password": "password123",
+  "role": "user"
+}
+
+###
+### Test Sign In
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "password123"
+}
+
+###
+### Test Forgot Password
+POST {{baseUrl}}/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "john@example.com"
+}
+
+###
+### Test Reset Password (replace TOKEN with actual token from email)
+POST {{baseUrl}}/auth/reset-password/TOKEN_HERE
+Content-Type: application/json
+
+{
+  "newPassword": "newpassword123"
+}
+
+###
+### Test Health Check (if you add one)
+GET {{baseUrl}}/
+

@@ -31,10 +31,10 @@ const Register = async (req: any, res: any) => {
     // const link = `http://localhost:5000/auth/verify/${token} || https://${process.env.VERCEL_URL}`
 
         const baseUrl = process.env.BASE_URL || 
-      (process.env.VERCEL_URL ? `https://$process.env.VERCEL_URL/auth/verify/${token}` : 'http://localhost:5000/auth/verify/${token}');
+      (process.env.VERCEL_URL ? `https://$process.env.VERCEL_URL/auth/verify/${token}` : `http://localhost:5000/auth/verify/${token}`);
 
     const message = `
-Registratiin Verification Link:
+Registratiin Verification Link:               
 
 ${baseUrl}
 

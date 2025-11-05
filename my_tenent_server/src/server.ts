@@ -1,6 +1,9 @@
 import express from 'express';
 const AuthRoutes=require('./routes/auth')
 const {ConnectDB} = require('./config/db')
+const getUsersRoutes=require('./routes/getUsers')
+import { verifyToken } from "./middleware/authMiddleware";
+
 
 
 
@@ -11,6 +14,7 @@ const app = express()
 app.use(express.json())
 
 app.use('/auth',AuthRoutes)
+app.use('/users',verifyToken,getUsersRoutes)
 
 ConnectDB();
 

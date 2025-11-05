@@ -31,6 +31,10 @@ const userModel=mongoose.Schema({
   role:{
     type:String,
     required:true
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
   }
 })
 

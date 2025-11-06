@@ -59,6 +59,7 @@ curl -X POST https://your-project-name.vercel.app/auth/forgot-password \
   }'
 ```
 
+
 #### 4. Test Reset Password
 ```bash
 curl -X POST https://your-project-name.vercel.app/auth/reset-password/YOUR_TOKEN_HERE \
@@ -290,6 +291,6 @@ Content-Type: application/json
   "password": "password123"
 }
 ```
-
+{}
 
 

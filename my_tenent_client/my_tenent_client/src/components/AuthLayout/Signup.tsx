@@ -1,5 +1,6 @@
 import React from "react";
 import { useFormik } from "formik";
+import { toast } from "react-toastify";
 import {
   TextField,
   Button,
@@ -11,7 +12,9 @@ import {
   InputLabel,
   Select,
 } from "@mui/material";
+import axiosInstance from "../../axios/axios";
 import { EXPORTED_THEME } from "../../theme";
+import { ENDPOINTS } from "../../utils/endPoints";
 import { initialValues, validationSchema } from "../../constants/constants";
 import "./AuthForm.css";
 
@@ -26,23 +29,31 @@ interface SignupProps {
 }
 
 export const Signup: React.FC<SignupProps> = ({
-  onSignup,
+  // onSignup,
   onSwitchToLogin,
 }) => {
   const theme = EXPORTED_THEME;
 
   const formik = useFormik({
-    initialValues,
+    initialValues: {
+      role: "",
+      password: "",
+      name: "",
+      email: "",
+    },
     validationSchema,
-    onSubmit: async (values, { setSubmitting }) => {
+    onSubmit: async (values) => {
       try {
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // simulate API
-        onSignup?.(values.name, values.email, values.password, values.role);
-        console.log("Signup successful:", values);
-      } catch (error) {
-        console.error("Signup failed:", error);
-      } finally {
-        setSubmitting(false);
+        const response = await axiosInstance.post(ENDPOINTS.SIGNUP, {
+          fullName: values.name.trim(),
+          email: values.email.trim(),
+          password: values.password.trim(),
+          role: values.role.trim(),
+        });
+        toast.success(response?.data?.message || "Registration successfull");
+        console.log(response, "res====");
+      } catch (error: any) {
+        throw error.response?.data || { message: "Signup failed" };
       }
     },
   });
@@ -157,9 +168,9 @@ export const Signup: React.FC<SignupProps> = ({
           onBlur={formik.handleBlur}
         >
           <MenuItem value="">Select Role</MenuItem>
-          <MenuItem value="Tenant">Tenant</MenuItem>
-          <MenuItem value="Admin">Admin</MenuItem>
-          <MenuItem value="Super Admin">Super Admin</MenuItem>
+          <MenuItem value="tenant">Tenant</MenuItem>
+          <MenuItem value="admin">Admin</MenuItem>
+          <MenuItem value="super admin">Super Admin</MenuItem>
         </Select>
         {formik.touched.role && formik.errors.role && (
           <Typography

@@ -1,210 +1,232 @@
-import React, { useState } from 'react';
-import { EXPORTED_THEME } from '../../theme';
-import './AuthForm.css';
+import React from "react";
+import { useFormik } from "formik";
+import { toast } from "react-toastify";
+import {
+  TextField,
+  Button,
+  Box,
+  Typography,
+  CircularProgress,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
+} from "@mui/material";
+import axiosInstance from "../../axios/axios";
+import { EXPORTED_THEME } from "../../theme";
+import { ENDPOINTS } from "../../utils/endPoints";
+import { initialValues, validationSchema } from "../../constants/constants";
+import "./AuthForm.css";
 
 interface SignupProps {
-  onSignup?: (name: string, email: string, password: string) => void;
+  onSignup?: (
+    name: string,
+    email: string,
+    password: string,
+    role: string
+  ) => void;
   onSwitchToLogin?: () => void;
 }
 
-export const Signup: React.FC<SignupProps> = ({ onSignup, onSwitchToLogin }) => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+export const Signup: React.FC<SignupProps> = ({
+  // onSignup,
+  onSwitchToLogin,
+}) => {
   const theme = EXPORTED_THEME;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (!name || !email || !password || !confirmPassword) {
-      setError('Please fill in all fields');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters long');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      onSignup?.(name, email, password);
-      console.log('Signup attempt:', { name, email, password });
-    } catch (err) {
-      setError('Signup failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const formik = useFormik({
+    initialValues: {
+      role: "",
+      password: "",
+      name: "",
+      email: "",
+    },
+    validationSchema,
+    onSubmit: async (values) => {
+      try {
+        const response = await axiosInstance.post(ENDPOINTS.SIGNUP, {
+          fullName: values.name.trim(),
+          email: values.email.trim(),
+          password: values.password.trim(),
+          role: values.role.trim(),
+        });
+        toast.success(response?.data?.message || "Registration successfull");
+        console.log(response, "res====");
+      } catch (error: any) {
+        throw error.response?.data || { message: "Signup failed" };
+      }
+    },
+  });
 
   return (
-    <form className="auth-form" onSubmit={handleSubmit}>
-      <div className="form-group">
-        <label 
-          htmlFor="name" 
-          style={{ 
-            color: theme.colors.text,
-            fontFamily: theme.fonts.primary 
-          }}
-        >
-          Full Name
-        </label>
-        <input
-          id="name"
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Enter your full name"
-          disabled={loading}
-          style={{
-            backgroundColor: theme.colors.surface,
-            color: theme.colors.text,
-            border: `1px solid ${theme.colors.border}`,
-            borderRadius: theme.borderRadius.md,
-            fontFamily: theme.fonts.primary,
-          }}
-        />
-      </div>
+    <Box
+      component="form"
+      onSubmit={formik.handleSubmit}
+      className="auth-form"
+      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+    >
+      <Typography
+        variant="h5"
+        sx={{
+          fontFamily: theme.fonts.primary,
+          color: theme.colors.text,
+          fontWeight: 600,
+          mb: 1,
+        }}
+      >
+        Create Account
+      </Typography>
 
-      <div className="form-group">
-        <label 
-          htmlFor="email" 
-          style={{ 
-            color: theme.colors.text,
-            fontFamily: theme.fonts.primary 
-          }}
-        >
-          Email
-        </label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter your email"
-          disabled={loading}
-          style={{
-            backgroundColor: theme.colors.surface,
-            color: theme.colors.text,
-            border: `1px solid ${theme.colors.border}`,
-            borderRadius: theme.borderRadius.md,
-            fontFamily: theme.fonts.primary,
-          }}
-        />
-      </div>
+      {/* Full Name */}
+      <TextField
+        fullWidth
+        id="name"
+        name="name"
+        size="small"
+        label="Full Name"
+        variant="outlined"
+        value={formik.values.name}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        error={formik.touched.name && Boolean(formik.errors.name)}
+        helperText={formik.touched.name && formik.errors.name}
+      />
 
-      <div className="form-group">
-        <label 
-          htmlFor="password" 
-          style={{ 
-            color: theme.colors.text,
-            fontFamily: theme.fonts.primary 
-          }}
-        >
-          Password
-        </label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Create a password"
-          disabled={loading}
-          style={{
-            backgroundColor: theme.colors.surface,
-            color: theme.colors.text,
-            border: `1px solid ${theme.colors.border}`,
-            borderRadius: theme.borderRadius.md,
-            fontFamily: theme.fonts.primary,
-          }}
-        />
-      </div>
+      {/* Email */}
+      <TextField
+        fullWidth
+        id="email"
+        name="email"
+        size="small"
+        label="Email"
+        type="email"
+        variant="outlined"
+        value={formik.values.email}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        error={formik.touched.email && Boolean(formik.errors.email)}
+        helperText={formik.touched.email && formik.errors.email}
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            backgroundColor: "transparent", // 👈 removes white bg
+          },
+        }}
+      />
 
-      <div className="form-group">
-        <label 
-          htmlFor="confirmPassword" 
-          style={{ 
-            color: theme.colors.text,
-            fontFamily: theme.fonts.primary 
-          }}
-        >
-          Confirm Password
-        </label>
-        <input
-          id="confirmPassword"
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          placeholder="Confirm your password"
-          disabled={loading}
-          style={{
-            backgroundColor: theme.colors.surface,
-            color: theme.colors.text,
-            border: `1px solid ${theme.colors.border}`,
-            borderRadius: theme.borderRadius.md,
-            fontFamily: theme.fonts.primary,
-          }}
-        />
-      </div>
+      {/* Password */}
+      <TextField
+        fullWidth
+        id="password"
+        name="password"
+        size="small"
+        label="Password"
+        type="password"
+        variant="outlined"
+        value={formik.values.password}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        error={formik.touched.password && Boolean(formik.errors.password)}
+        helperText={formik.touched.password && formik.errors.password}
+      />
 
-      {error && (
-        <div 
-          className="error-message"
-          style={{ 
-            color: theme.colors.error,
-            backgroundColor: `${theme.colors.error}15`,
-            borderRadius: theme.borderRadius.md 
-          }}
-        >
-          {error}
-        </div>
-      )}
+      {/* Confirm Password */}
+      <TextField
+        fullWidth
+        id="confirmPassword"
+        size="small"
+        name="confirmPassword"
+        label="Confirm Password"
+        type="password"
+        variant="outlined"
+        value={formik.values.confirmPassword}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        error={
+          formik.touched.confirmPassword &&
+          Boolean(formik.errors.confirmPassword)
+        }
+        helperText={
+          formik.touched.confirmPassword && formik.errors.confirmPassword
+        }
+      />
 
-      <button
+      {/* Register As Dropdown */}
+      <FormControl
+        fullWidth
+        variant="outlined"
+        error={formik.touched.role && Boolean(formik.errors.role)}
+      >
+        <InputLabel id="role-label">Register As</InputLabel>
+        <Select
+          labelId="role-label"
+          id="role"
+          size="small"
+          name="role"
+          label="Register As"
+          value={formik.values.role}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+        >
+          <MenuItem value="">Select Role</MenuItem>
+          <MenuItem value="tenant">Tenant</MenuItem>
+          <MenuItem value="admin">Admin</MenuItem>
+          <MenuItem value="super admin">Super Admin</MenuItem>
+        </Select>
+        {formik.touched.role && formik.errors.role && (
+          <Typography
+            variant="caption"
+            sx={{ color: theme.colors.error, mt: 0.5 }}
+          >
+            {formik.errors.role}
+          </Typography>
+        )}
+      </FormControl>
+
+      {/* Submit Button */}
+      <Button
         type="submit"
-        disabled={loading}
-        className="auth-button"
-        style={{
+        size="small"
+        variant="contained"
+        disabled={formik.isSubmitting}
+        sx={{
+          mt: 2,
           backgroundColor: theme.colors.primary,
           color: theme.colors.surface,
           fontFamily: theme.fonts.primary,
           borderRadius: theme.borderRadius.md,
-          border: 'none',
+          "&:hover": {
+            backgroundColor: theme.colors.primaryHover || theme.colors.primary,
+          },
         }}
       >
-        {loading ? 'Creating account...' : 'Create Account'}
-      </button>
+        {formik.isSubmitting ? (
+          <CircularProgress size={24} color="inherit" />
+        ) : (
+          "Create Account"
+        )}
+      </Button>
 
       {onSwitchToLogin && (
-        <div className="auth-footer">
-          <span style={{ color: theme.colors.textSecondary }}>
-            Already have an account?{' '}
-          </span>
-          <button
-            type="button"
+        <Typography
+          sx={{
+            textAlign: "center",
+            mt: 2,
+            color: theme.colors.textSecondary,
+          }}
+        >
+          Already have an account?{" "}
+          <Button
             onClick={onSwitchToLogin}
-            className="link-button"
-            style={{
+            sx={{
               color: theme.colors.primary,
+              textTransform: "none",
               fontFamily: theme.fonts.primary,
             }}
           >
             Sign in
-          </button>
-        </div>
+          </Button>
+        </Typography>
       )}
-    </form>
+    </Box>
   );
 };
-
